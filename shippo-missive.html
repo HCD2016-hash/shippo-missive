@@ -813,7 +813,7 @@
 <script src="https://integrations.missiveapp.com/missive.js"></script>
 <script>
   // State
-  const VERSION = '4.0'; // Now pulls names from /shipments endpoint
+  const VERSION = '4.1'; // Fixed detail view tracking fetch
   console.log('[Shippo Dashboard] Version', VERSION);
 
   let apiToken = null;
@@ -1137,13 +1137,27 @@
     let trackingHtml = '<div class="empty-state" style="padding: 20px;"><div>No tracking updates yet</div></div>';
 
     // Fetch tracking details if we have a tracking number
-    if (t.tracking_number && t.carrier) {
+    const carrier = t.carrier || detectCarrier(t.tracking_number);
+    console.log(`[Shippo Detail] Opening ${t.tracking_number}, carrier=${carrier}`);
+
+    if (t.tracking_number && carrier) {
       try {
-        const trackRes = await fetch(`https://api.goshippo.com/tracks/${t.carrier}/${t.tracking_number}`, {
+        const trackUrl = `https://api.goshippo.com/tracks/${carrier.toLowerCase()}/${t.tracking_number}`;
+        console.log(`[Shippo Detail] Fetching: ${trackUrl}`);
+
+        const trackRes = await fetch(trackUrl, {
           headers: { 'Authorization': `ShippoToken ${apiToken}` }
         });
+
         if (trackRes.ok) {
           const trackData = await trackRes.json();
+          console.log(`[Shippo Detail] Got tracking data:`, trackData.tracking_status);
+
+          // Update carrier if we got it from API
+          if (trackData.carrier) {
+            t.carrier = trackData.carrier;
+          }
+
           if (trackData.tracking_history && trackData.tracking_history.length > 0) {
             trackingHtml = '<div class="timeline">' + trackData.tracking_history.slice().reverse().map(h => `
               <div class="timeline-item">
@@ -1154,10 +1168,14 @@
               </div>
             `).join('') + '</div>';
           }
+        } else {
+          console.warn(`[Shippo Detail] Track API returned ${trackRes.status}`);
         }
       } catch (e) {
-        console.error('Track fetch error:', e);
+        console.error('[Shippo Detail] Track fetch error:', e);
       }
+    } else {
+      console.warn(`[Shippo Detail] Cannot fetch tracking - no tracking number or carrier`);
     }
 
     detailContent.innerHTML = `
@@ -1180,7 +1198,7 @@
           </div>
           <div class="detail-row">
             <span class="detail-label">Carrier</span>
-            <span class="detail-value">${esc((t.carrier || t.servicelevel?.carrier || 'Unknown').toUpperCase())}</span>
+            <span class="detail-value">${esc((t.carrier || detectCarrier(t.tracking_number) || 'Unknown').toUpperCase())}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Service</span>
