@@ -18,11 +18,11 @@ Shippo Webhooks ──► Pi Flask App (port 5000) ──► SQLite DB
 
 ### Files to Modify
 
-**Location:** `~/shipping-dashboard/` on Raspberry Pi
+**Location:** `~/HCD-Shipping/` on Raspberry Pi
 
 ### Step 1: Create `shippo_webhook.py`
 
-Create a new file `~/shipping-dashboard/shippo_webhook.py` with this content:
+Create a new file `~/HCD-Shipping/shippo_webhook.py` with this content:
 
 ```python
 """
@@ -348,9 +348,9 @@ app.register_blueprint(create_shippo_routes(get_db))
 ### Step 3: Restart the Dashboard
 
 ```bash
-sudo systemctl restart shipping-dashboard
+sudo systemctl restart HCD-Shipping
 # Or if running manually:
-# pkill -f "python.*run.py" && cd ~/shipping-dashboard && python run.py &
+# pkill -f "python.*run.py" && cd ~/HCD-Shipping && python run.py &
 ```
 
 ### Step 4: Verify
@@ -469,7 +469,7 @@ Receives Shippo webhook events. No authentication required (Shippo doesn't suppo
 
 **Webhooks not arriving?**
 - Check ngrok is running: `curl https://hcd2016.ngrok.dev/health`
-- Check logs: `tail -f ~/shipping-dashboard/logs/app.log`
+- Check logs: `tail -f ~/HCD-Shipping/logs/app.log`
 - Verify webhook URL in Shippo dashboard
 
 **Empty shipments list?**

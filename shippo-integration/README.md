@@ -7,8 +7,8 @@ This adds Shippo webhook tracking to your **existing** shipping dashboard at por
 ### Step 1: Copy the webhook module
 
 ```bash
-# On your Pi, copy shippo_webhook.py to your shipping-dashboard folder
-cp shippo_webhook.py ~/shipping-dashboard/
+# On your Pi, copy shippo_webhook.py to your HCD-Shipping folder
+cp shippo_webhook.py ~/HCD-Shipping/
 ```
 
 ### Step 2: Update your app.py
