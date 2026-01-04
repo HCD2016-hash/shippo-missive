@@ -817,6 +817,8 @@
   let transactions = [];
   let currentFilter = 'all';
   let searchQuery = '';
+  const CACHE_KEY = 'shippo_enriched_cache';
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
   // Elements
   const $ = id => document.getElementById(id);
@@ -921,10 +923,18 @@
       if (!res.ok) throw new Error('Failed to load');
 
       const data = await res.json();
-      transactions = data.results || [];
+      let txns = data.results || [];
 
       // Sort by date descending
-      transactions.sort((a, b) => new Date(b.object_created) - new Date(a.object_created));
+      txns.sort((a, b) => new Date(b.object_created) - new Date(a.object_created));
+
+      // Enrich with tracking details
+      shipmentList.innerHTML = '<div class="loading"><div class="spinner"></div><div>Fetching tracking details...</div></div>';
+
+      transactions = await enrichTransactions(txns, (completed, total) => {
+        const pct = Math.round((completed / total) * 100);
+        shipmentList.innerHTML = `<div class="loading"><div class="spinner"></div><div>Fetching tracking details... ${pct}%</div></div>`;
+      });
 
       updateStats();
       renderShipments();
@@ -1187,6 +1197,107 @@
     if (!text) return;
     navigator.clipboard.writeText(text);
     showToast('Copied to clipboard!');
+  }
+
+  // Detect carrier from tracking number pattern
+  function detectCarrier(trackingNumber) {
+    if (!trackingNumber) return null;
+    const tn = trackingNumber.toUpperCase();
+    if (tn.startsWith('1Z')) return 'ups';
+    if (/^\d{12,22}$/.test(tn)) return 'fedex';
+    if (/^(94|93|92|94|95)\d{18,22}$/.test(tn)) return 'usps';
+    if (/^[A-Z]{2}\d{9}US$/.test(tn)) return 'usps';
+    if (/^\d{10,11}$/.test(tn)) return 'dhl_express';
+    return null;
+  }
+
+  // Enrich transactions with tracking details
+  async function enrichTransactions(txns, updateProgress) {
+    const enriched = [];
+    const toFetch = txns.filter(t => t.tracking_number && (t.carrier || detectCarrier(t.tracking_number)));
+
+    // Check cache first
+    let cache = {};
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Date.now() - parsed.timestamp < CACHE_TTL) {
+          cache = parsed.data || {};
+        }
+      }
+    } catch (e) {}
+
+    let completed = 0;
+    for (const t of txns) {
+      const carrier = t.carrier || detectCarrier(t.tracking_number);
+      const cacheKey = `${carrier}_${t.tracking_number}`;
+
+      // Use cached data if available
+      if (cache[cacheKey]) {
+        Object.assign(t, cache[cacheKey]);
+        enriched.push(t);
+        completed++;
+        continue;
+      }
+
+      // Fetch tracking details
+      if (t.tracking_number && carrier) {
+        try {
+          const res = await fetch(`https://api.goshippo.com/tracks/${carrier}/${t.tracking_number}`, {
+            headers: { 'Authorization': `ShippoToken ${apiToken}` }
+          });
+
+          if (res.ok) {
+            const track = await res.json();
+            // Merge tracking data into transaction
+            t.address_to = track.address_to || t.address_to;
+            t.address_from = track.address_from || t.address_from;
+            t.tracking_history = track.tracking_history || [];
+            t.eta = track.eta;
+            t.carrier = track.carrier || carrier;
+            t.servicelevel = track.servicelevel || t.servicelevel;
+
+            // Update status from tracking
+            if (track.tracking_status) {
+              t.tracking_status = track.tracking_status.status || track.tracking_status;
+            }
+
+            // Cache the enriched data
+            cache[cacheKey] = {
+              address_to: t.address_to,
+              address_from: t.address_from,
+              tracking_history: t.tracking_history,
+              eta: t.eta,
+              carrier: t.carrier,
+              servicelevel: t.servicelevel,
+              tracking_status: t.tracking_status
+            };
+          }
+        } catch (e) {
+          console.warn(`Failed to enrich ${t.tracking_number}:`, e);
+        }
+
+        // Small delay to avoid rate limiting (100ms between requests)
+        await new Promise(r => setTimeout(r, 100));
+      }
+
+      completed++;
+      if (updateProgress) {
+        updateProgress(completed, txns.length);
+      }
+      enriched.push(t);
+    }
+
+    // Save cache
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        timestamp: Date.now(),
+        data: cache
+      }));
+    } catch (e) {}
+
+    return enriched;
   }
 
   // Start
