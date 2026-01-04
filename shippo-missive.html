@@ -813,7 +813,7 @@
 <script src="https://integrations.missiveapp.com/missive.js"></script>
 <script>
   // State
-  const VERSION = '3.0'; // For cache busting verification
+  const VERSION = '4.0'; // Now pulls names from /shipments endpoint
   console.log('[Shippo Dashboard] Version', VERSION);
 
   let apiToken = null;
@@ -910,33 +910,60 @@
 
   $('refresh-btn').addEventListener('click', () => loadTransactions());
 
-  // Load transactions
+  // Load shipments (not transactions - shipments have full address with name)
   async function loadTransactions() {
     shipmentList.innerHTML = '<div class="loading"><div class="spinner"></div><div>Loading shipments...</div></div>';
 
     try {
-      // Get transactions from last 90 days
+      // Get shipments from last 90 days - this endpoint has full address_to with name
       const endDate = new Date().toISOString();
       const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
 
-      const res = await fetch(`https://api.goshippo.com/transactions/?results=100&object_created_gt=${startDate}&object_created_lt=${endDate}`, {
-        headers: { 'Authorization': `ShippoToken ${apiToken}` }
+      // Load shipments (has full addresses) and transactions (has tracking numbers)
+      const [shipmentsRes, transactionsRes] = await Promise.all([
+        fetch(`https://api.goshippo.com/shipments/?results=100&object_created_gt=${startDate}`, {
+          headers: { 'Authorization': `ShippoToken ${apiToken}` }
+        }),
+        fetch(`https://api.goshippo.com/transactions/?results=100&object_created_gt=${startDate}`, {
+          headers: { 'Authorization': `ShippoToken ${apiToken}` }
+        })
+      ]);
+
+      if (!shipmentsRes.ok || !transactionsRes.ok) throw new Error('Failed to load');
+
+      const shipmentsData = await shipmentsRes.json();
+      const transactionsData = await transactionsRes.json();
+
+      const shipments = shipmentsData.results || [];
+      const txns = transactionsData.results || [];
+
+      console.log('[Shippo] Loaded', shipments.length, 'shipments and', txns.length, 'transactions');
+
+      // Merge: start with transactions (have tracking), add address from shipments
+      let merged = txns.map(t => {
+        // Find matching shipment by rate -> shipment relationship or by metadata
+        const shipment = shipments.find(s =>
+          s.rates?.some(r => r.object_id === t.rate) ||
+          (t.metadata && s.metadata === t.metadata)
+        );
+
+        if (shipment) {
+          t.address_to = shipment.address_to;
+          t.address_from = shipment.address_from;
+          console.log(`[Shippo] Matched ${t.tracking_number} to ${shipment.address_to?.name}`);
+        }
+        return t;
       });
 
-      if (!res.ok) throw new Error('Failed to load');
-
-      const data = await res.json();
-      let txns = data.results || [];
-
       // Sort by date descending
-      txns.sort((a, b) => new Date(b.object_created) - new Date(a.object_created));
+      merged.sort((a, b) => new Date(b.object_created) - new Date(a.object_created));
 
-      // Enrich with tracking details
-      shipmentList.innerHTML = '<div class="loading"><div class="spinner"></div><div>Fetching tracking details...</div></div>';
+      // Enrich with live tracking status
+      shipmentList.innerHTML = '<div class="loading"><div class="spinner"></div><div>Fetching tracking status...</div></div>';
 
-      transactions = await enrichTransactions(txns, (completed, total) => {
+      transactions = await enrichTransactions(merged, (completed, total) => {
         const pct = Math.round((completed / total) * 100);
-        shipmentList.innerHTML = `<div class="loading"><div class="spinner"></div><div>Fetching tracking details... ${pct}%</div></div>`;
+        shipmentList.innerHTML = `<div class="loading"><div class="spinner"></div><div>Fetching tracking status... ${pct}%</div></div>`;
       });
 
       updateStats();
@@ -1258,13 +1285,19 @@
             const track = await res.json();
             console.log(`[Shippo] Got track data for ${t.tracking_number}:`, {
               carrier: track.carrier,
-              address_to: track.address_to,
               status: track.tracking_status?.status
             });
 
-            // Merge tracking data into transaction
-            t.address_to = track.address_to || t.address_to || {};
-            t.address_from = track.address_from || t.address_from || {};
+            // Only use track address if we don't already have it from shipments
+            // (shipments have full name, tracks API doesn't)
+            if (!t.address_to?.name && track.address_to) {
+              t.address_to = { ...t.address_to, ...track.address_to };
+            }
+            if (!t.address_from && track.address_from) {
+              t.address_from = track.address_from;
+            }
+
+            // Always update tracking-specific data
             t.tracking_history = track.tracking_history || [];
             t.eta = track.eta;
             t.carrier = track.carrier || carrier;
