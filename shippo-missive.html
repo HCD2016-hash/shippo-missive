@@ -813,7 +813,7 @@
 <script src="https://integrations.missiveapp.com/missive.js"></script>
 <script>
   // State
-  const VERSION = '4.1'; // Fixed detail view tracking fetch
+  const VERSION = '4.2'; // Filter out refunded labels
   console.log('[Shippo Dashboard] Version', VERSION);
 
   let apiToken = null;
@@ -935,9 +935,10 @@
       const transactionsData = await transactionsRes.json();
 
       const shipments = shipmentsData.results || [];
-      const txns = transactionsData.results || [];
+      // Filter out refunded transactions
+      const txns = (transactionsData.results || []).filter(t => t.status !== 'REFUNDED');
 
-      console.log('[Shippo] Loaded', shipments.length, 'shipments and', txns.length, 'transactions');
+      console.log('[Shippo] Loaded', shipments.length, 'shipments and', txns.length, 'transactions (excluded refunded)');
 
       // Merge: start with transactions (have tracking), add address from shipments
       let merged = txns.map(t => {
