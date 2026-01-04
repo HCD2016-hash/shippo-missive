@@ -813,7 +813,7 @@
 <script src="https://integrations.missiveapp.com/missive.js"></script>
 <script>
   // State
-  const VERSION = '4.2'; // Filter out refunded labels
+  const VERSION = '4.3'; // Fix tracking history in detail view
   console.log('[Shippo Dashboard] Version', VERSION);
 
   let apiToken = null;
@@ -1136,12 +1136,13 @@
     const date = new Date(t.object_created);
 
     let trackingHtml = '<div class="empty-state" style="padding: 20px;"><div>No tracking updates yet</div></div>';
+    let trackingHistory = t.tracking_history || [];
 
-    // Fetch tracking details if we have a tracking number
+    // Use pre-fetched tracking history if available, otherwise fetch fresh
     const carrier = t.carrier || detectCarrier(t.tracking_number);
-    console.log(`[Shippo Detail] Opening ${t.tracking_number}, carrier=${carrier}`);
+    console.log(`[Shippo Detail] Opening ${t.tracking_number}, carrier=${carrier}, has cached history: ${trackingHistory.length > 0}`);
 
-    if (t.tracking_number && carrier) {
+    if (trackingHistory.length === 0 && t.tracking_number && carrier) {
       try {
         const trackUrl = `https://api.goshippo.com/tracks/${carrier.toLowerCase()}/${t.tracking_number}`;
         console.log(`[Shippo Detail] Fetching: ${trackUrl}`);
@@ -1150,33 +1151,37 @@
           headers: { 'Authorization': `ShippoToken ${apiToken}` }
         });
 
+        console.log(`[Shippo Detail] Response status: ${trackRes.status}`);
+
         if (trackRes.ok) {
           const trackData = await trackRes.json();
-          console.log(`[Shippo Detail] Got tracking data:`, trackData.tracking_status);
+          console.log(`[Shippo Detail] Got tracking data:`, trackData);
 
-          // Update carrier if we got it from API
+          trackingHistory = trackData.tracking_history || [];
+          t.tracking_history = trackingHistory; // Cache for next time
+
           if (trackData.carrier) {
             t.carrier = trackData.carrier;
           }
-
-          if (trackData.tracking_history && trackData.tracking_history.length > 0) {
-            trackingHtml = '<div class="timeline">' + trackData.tracking_history.slice().reverse().map(h => `
-              <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-status">${esc(h.status_details || h.status)}</div>
-                <div class="timeline-location">${esc(h.location?.city || '')}${h.location?.city && h.location?.state ? ', ' : ''}${esc(h.location?.state || '')}</div>
-                <div class="timeline-time">${new Date(h.status_date).toLocaleString()}</div>
-              </div>
-            `).join('') + '</div>';
-          }
         } else {
-          console.warn(`[Shippo Detail] Track API returned ${trackRes.status}`);
+          const errorText = await trackRes.text();
+          console.warn(`[Shippo Detail] Track API error: ${trackRes.status}`, errorText);
         }
       } catch (e) {
         console.error('[Shippo Detail] Track fetch error:', e);
       }
-    } else {
-      console.warn(`[Shippo Detail] Cannot fetch tracking - no tracking number or carrier`);
+    }
+
+    // Build tracking history HTML
+    if (trackingHistory.length > 0) {
+      trackingHtml = '<div class="timeline">' + trackingHistory.slice().reverse().map(h => `
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-status">${esc(h.status_details || h.status)}</div>
+          <div class="timeline-location">${esc(h.location?.city || '')}${h.location?.city && h.location?.state ? ', ' : ''}${esc(h.location?.state || '')}</div>
+          <div class="timeline-time">${new Date(h.status_date).toLocaleString()}</div>
+        </div>
+      `).join('') + '</div>';
     }
 
     detailContent.innerHTML = `
