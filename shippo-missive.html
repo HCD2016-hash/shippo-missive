@@ -813,7 +813,7 @@
 <script src="https://integrations.missiveapp.com/missive.js"></script>
 <script>
   // State
-  const VERSION = '4.3'; // Fix tracking history in detail view
+  const VERSION = '4.4'; // Hide delivered shipments older than 2 weeks
   console.log('[Shippo Dashboard] Version', VERSION);
 
   let apiToken = null;
@@ -962,10 +962,24 @@
       // Enrich with live tracking status
       shipmentList.innerHTML = '<div class="loading"><div class="spinner"></div><div>Fetching tracking status...</div></div>';
 
-      transactions = await enrichTransactions(merged, (completed, total) => {
+      let enriched = await enrichTransactions(merged, (completed, total) => {
         const pct = Math.round((completed / total) * 100);
         shipmentList.innerHTML = `<div class="loading"><div class="spinner"></div><div>Fetching tracking status... ${pct}%</div></div>`;
       });
+
+      // Filter out delivered shipments older than 2 weeks
+      const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
+      const now = Date.now();
+      transactions = enriched.filter(t => {
+        const status = normalizeStatus(t.tracking_status);
+        // Keep all non-delivered shipments (active)
+        if (status !== 'DELIVERED') return true;
+        // For delivered: hide if older than 2 weeks
+        const deliveryDate = t.tracking_status?.status_date || t.object_created;
+        return (now - new Date(deliveryDate).getTime()) < TWO_WEEKS_MS;
+      });
+
+      console.log(`[Shippo] Filtered: ${enriched.length} → ${transactions.length} (hiding delivered >2 weeks)`);
 
       updateStats();
       renderShipments();
