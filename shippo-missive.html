@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shippo - Hub City Design</title>
+  <link href="https://integrations.missiveapp.com/missive.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary: #21262d;
+      --bg-hover: #30363d;
+      --text-primary: #e6edf3;
+      --text-secondary: #8b949e;
+      --text-muted: #6e7681;
+      --border-color: #30363d;
+      --accent: #58a6ff;
+      --accent-hover: #79b8ff;
+      --success: #3fb950;
+      --success-bg: rgba(63, 185, 80, 0.15);
+      --warning: #d29922;
+      --warning-bg: rgba(210, 153, 34, 0.15);
+      --danger: #f85149;
+      --danger-bg: rgba(248, 81, 73, 0.15);
+      --info: #58a6ff;
+      --info-bg: rgba(88, 166, 255, 0.15);
+      --purple: #a371f7;
+      --purple-bg: rgba(163, 113, 247, 0.15);
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f6f8fa;
+        --bg-tertiary: #f0f2f4;
+        --bg-hover: #e8ebef;
+        --text-primary: #1f2328;
+        --text-secondary: #656d76;
+        --text-muted: #8c959f;
+        --border-color: #d0d7de;
+        --success-bg: rgba(63, 185, 80, 0.12);
+        --warning-bg: rgba(210, 153, 34, 0.12);
+        --danger-bg: rgba(248, 81, 73, 0.12);
+        --info-bg: rgba(88, 166, 255, 0.12);
+        --purple-bg: rgba(163, 113, 247, 0.12);
+      }
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-size: 13px;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* Auth Screen */
+    #auth {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .auth-icon {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      font-size: 28px;
+    }
+
+    .auth-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .auth-desc {
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      max-width: 280px;
+    }
+
+    .auth-input {
+      width: 100%;
+      max-width: 320px;
+      padding: 12px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 12px;
+    }
+
+    .auth-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .auth-btn {
+      width: 100%;
+      max-width: 320px;
+      padding: 12px 24px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .auth-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    /* App Container */
+    #app {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .icon-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      overflow-x: auto;
+    }
+
+    .stat-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .stat-card:hover, .stat-card.active {
+      border-color: var(--accent);
+      background: var(--bg-tertiary);
+    }
+
+    .stat-card.active {
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .stat-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .stat-dot.all { background: var(--text-secondary); }
+    .stat-dot.pre-transit { background: var(--text-muted); }
+    .stat-dot.transit { background: var(--info); }
+    .stat-dot.out-for-delivery { background: var(--purple); }
+    .stat-dot.delivered { background: var(--success); }
+    .stat-dot.failure { background: var(--danger); }
+    .stat-dot.returned { background: var(--warning); }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .stat-count {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Search Bar */
+    .search-bar {
+      padding: 12px 16px;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .search-input-wrap {
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 12px 10px 36px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 13px;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    /* Shipment List */
+    .shipment-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+
+    .shipment-item {
+      display: flex;
+      flex-direction: column;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .shipment-item:hover {
+      background: var(--bg-secondary);
+    }
+
+    .shipment-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .shipment-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .shipment-recipient {
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+
+    .shipment-address {
+      font-size: 12px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .shipment-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .tracking-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      background: var(--info-bg);
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .tracking-number:hover {
+      opacity: 0.8;
+    }
+
+    .shipment-date {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .shipment-carrier {
+      font-size: 11px;
+      color: var(--text-secondary);
+      background: var(--bg-tertiary);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+
+    .status-badge.pre-transit {
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+    }
+
+    .status-badge.transit {
+      background: var(--info-bg);
+      color: var(--info);
+    }
+
+    .status-badge.out-for-delivery {
+      background: var(--purple-bg);
+      color: var(--purple);
+    }
+
+    .status-badge.delivered {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .status-badge.failure, .status-badge.unknown {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .status-badge.returned {
+      background: var(--warning-bg);
+      color: var(--warning);
+    }
+
+    /* Detail Panel */
+    .detail-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg-primary);
+      z-index: 200;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .detail-overlay.open {
+      display: flex;
+    }
+
+    .detail-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .back-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.15s;
+    }
+
+    .back-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .detail-title {
+      flex: 1;
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .detail-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .detail-section {
+      margin-bottom: 24px;
+    }
+
+    .detail-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .detail-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .detail-row:first-child {
+      padding-top: 0;
+    }
+
+    .detail-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .detail-value {
+      font-size: 13px;
+      color: var(--text-primary);
+      text-align: right;
+      max-width: 60%;
+      word-break: break-word;
+    }
+
+    .detail-value.mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+
+    .detail-value.link {
+      color: var(--accent);
+      cursor: pointer;
+    }
+
+    .detail-value.link:hover {
+      text-decoration: underline;
+    }
+
+    /* Action Buttons */
+    .action-btns {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .action-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .action-btn:hover {
+      background: var(--bg-hover);
+    }
+
+    .action-btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .action-btn.primary:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Tracking Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 24px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: var(--border-color);
+      border-radius: 1px;
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-bottom: 16px;
+    }
+
+    .timeline-item:last-child {
+      padding-bottom: 0;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -24px;
+      top: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--bg-tertiary);
+      border: 3px solid var(--border-color);
+    }
+
+    .timeline-item:first-child .timeline-dot {
+      background: var(--success);
+      border-color: var(--success);
+    }
+
+    .timeline-status {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .timeline-location {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 2px;
+    }
+
+    .timeline-time {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Loading & Empty States */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px;
+      text-align: center;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 1000;
+      transition: transform 0.3s ease;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Auth Screen -->
+<div id="auth">
+  <div class="auth-icon">📦</div>
+  <h1 class="auth-title">Shippo Dashboard</h1>
+  <p class="auth-desc">Enter your Shippo API token to view and track your shipments.</p>
+  <input type="password" id="token-input" class="auth-input" placeholder="shippo_live_xxxxx...">
+  <button id="auth-btn" class="auth-btn">Connect Shippo</button>
+</div>
+
+<!-- App -->
+<div id="app">
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon">📦</span>
+        <span>Shippo</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="refresh-btn" title="Refresh">↻</button>
+      <button class="icon-btn" id="logout-btn" title="Disconnect">⏻</button>
+    </div>
+  </header>
+
+  <div class="stats-bar" id="stats-bar">
+    <div class="stat-card active" data-filter="all">
+      <span class="stat-dot all"></span>
+      <span class="stat-label">All</span>
+      <span class="stat-count" id="stat-all">0</span>
+    </div>
+    <div class="stat-card" data-filter="PRE_TRANSIT">
+      <span class="stat-dot pre-transit"></span>
+      <span class="stat-label">Pre-Transit</span>
+      <span class="stat-count" id="stat-pre-transit">0</span>
+    </div>
+    <div class="stat-card" data-filter="TRANSIT">
+      <span class="stat-dot transit"></span>
+      <span class="stat-label">In Transit</span>
+      <span class="stat-count" id="stat-transit">0</span>
+    </div>
+    <div class="stat-card" data-filter="OUT_FOR_DELIVERY">
+      <span class="stat-dot out-for-delivery"></span>
+      <span class="stat-label">Out for Delivery</span>
+      <span class="stat-count" id="stat-out-for-delivery">0</span>
+    </div>
+    <div class="stat-card" data-filter="DELIVERED">
+      <span class="stat-dot delivered"></span>
+      <span class="stat-label">Delivered</span>
+      <span class="stat-count" id="stat-delivered">0</span>
+    </div>
+    <div class="stat-card" data-filter="FAILURE">
+      <span class="stat-dot failure"></span>
+      <span class="stat-label">Exception</span>
+      <span class="stat-count" id="stat-failure">0</span>
+    </div>
+  </div>
+
+  <div class="search-bar">
+    <div class="search-input-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" class="search-input" placeholder="Search tracking #, recipient, or address...">
+    </div>
+  </div>
+
+  <div class="shipment-list" id="shipment-list">
+    <div class="loading">
+      <div class="spinner"></div>
+      <div>Loading shipments...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Panel -->
+<div class="detail-overlay" id="detail-overlay">
+  <header class="detail-header">
+    <button class="back-btn" id="back-btn">←</button>
+    <span class="detail-title">Shipment Details</span>
+  </header>
+  <div class="detail-content" id="detail-content"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="https://integrations.missiveapp.com/missive.js"></script>
+<script>
+  // State
+  let apiToken = null;
+  let transactions = [];
+  let currentFilter = 'all';
+  let searchQuery = '';
+
+  // Elements
+  const $ = id => document.getElementById(id);
+  const authEl = $('auth');
+  const appEl = $('app');
+  const shipmentList = $('shipment-list');
+  const detailOverlay = $('detail-overlay');
+  const detailContent = $('detail-content');
+  const searchInput = $('search-input');
+  const toast = $('toast');
+
+  // Init
+  async function init() {
+    try {
+      if (typeof Missive !== 'undefined') {
+        apiToken = await Missive.storeGet('shippo_api_token');
+      } else {
+        apiToken = localStorage.getItem('shippo_api_token');
+      }
+
+      if (apiToken) {
+        showApp();
+        await loadTransactions();
+      } else {
+        showAuth();
+      }
+    } catch (e) {
+      console.error('Init error:', e);
+      showAuth();
+    }
+  }
+
+  function showAuth() {
+    authEl.style.display = 'flex';
+    appEl.style.display = 'none';
+  }
+
+  function showApp() {
+    authEl.style.display = 'none';
+    appEl.style.display = 'flex';
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  // Auth handlers
+  $('auth-btn').addEventListener('click', async () => {
+    const token = $('token-input').value.trim();
+    if (!token) return;
+
+    try {
+      // Test the token
+      const res = await fetch('https://api.goshippo.com/transactions/?results=1', {
+        headers: { 'Authorization': `ShippoToken ${token}` }
+      });
+
+      if (!res.ok) throw new Error('Invalid token');
+
+      apiToken = token;
+      if (typeof Missive !== 'undefined') {
+        await Missive.storeSet('shippo_api_token', token);
+      } else {
+        localStorage.setItem('shippo_api_token', token);
+      }
+
+      showApp();
+      await loadTransactions();
+    } catch (e) {
+      showToast('Invalid API token');
+    }
+  });
+
+  $('logout-btn').addEventListener('click', async () => {
+    if (typeof Missive !== 'undefined') {
+      await Missive.storeSet('shippo_api_token', null);
+    } else {
+      localStorage.removeItem('shippo_api_token');
+    }
+    apiToken = null;
+    transactions = [];
+    showAuth();
+  });
+
+  $('refresh-btn').addEventListener('click', () => loadTransactions());
+
+  // Load transactions
+  async function loadTransactions() {
+    shipmentList.innerHTML = '<div class="loading"><div class="spinner"></div><div>Loading shipments...</div></div>';
+
+    try {
+      // Get transactions from last 90 days
+      const endDate = new Date().toISOString();
+      const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+
+      const res = await fetch(`https://api.goshippo.com/transactions/?results=100&object_created_gt=${startDate}&object_created_lt=${endDate}`, {
+        headers: { 'Authorization': `ShippoToken ${apiToken}` }
+      });
+
+      if (!res.ok) throw new Error('Failed to load');
+
+      const data = await res.json();
+      transactions = data.results || [];
+
+      // Sort by date descending
+      transactions.sort((a, b) => new Date(b.object_created) - new Date(a.object_created));
+
+      updateStats();
+      renderShipments();
+    } catch (e) {
+      console.error('Load error:', e);
+      shipmentList.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div>Failed to load shipments</div></div>';
+    }
+  }
+
+  // Update stats
+  function updateStats() {
+    const counts = {
+      all: transactions.length,
+      'PRE_TRANSIT': 0,
+      'TRANSIT': 0,
+      'OUT_FOR_DELIVERY': 0,
+      'DELIVERED': 0,
+      'FAILURE': 0
+    };
+
+    transactions.forEach(t => {
+      const status = normalizeStatus(t.tracking_status);
+      if (counts[status] !== undefined) counts[status]++;
+    });
+
+    $('stat-all').textContent = counts.all;
+    $('stat-pre-transit').textContent = counts['PRE_TRANSIT'];
+    $('stat-transit').textContent = counts['TRANSIT'];
+    $('stat-out-for-delivery').textContent = counts['OUT_FOR_DELIVERY'];
+    $('stat-delivered').textContent = counts['DELIVERED'];
+    $('stat-failure').textContent = counts['FAILURE'];
+  }
+
+  function normalizeStatus(status) {
+    if (!status) return 'PRE_TRANSIT';
+    const s = (status.status || status).toUpperCase();
+    if (s.includes('DELIVERED')) return 'DELIVERED';
+    if (s.includes('OUT_FOR_DELIVERY') || s.includes('OUT FOR DELIVERY')) return 'OUT_FOR_DELIVERY';
+    if (s.includes('TRANSIT') || s === 'IN_TRANSIT') return 'TRANSIT';
+    if (s.includes('FAILURE') || s.includes('EXCEPTION') || s === 'UNKNOWN') return 'FAILURE';
+    if (s.includes('RETURNED')) return 'RETURNED';
+    return 'PRE_TRANSIT';
+  }
+
+  function getStatusClass(status) {
+    const s = normalizeStatus(status);
+    return {
+      'PRE_TRANSIT': 'pre-transit',
+      'TRANSIT': 'transit',
+      'OUT_FOR_DELIVERY': 'out-for-delivery',
+      'DELIVERED': 'delivered',
+      'FAILURE': 'failure',
+      'RETURNED': 'returned'
+    }[s] || 'pre-transit';
+  }
+
+  function getStatusLabel(status) {
+    const s = normalizeStatus(status);
+    return {
+      'PRE_TRANSIT': 'Pre-Transit',
+      'TRANSIT': 'In Transit',
+      'OUT_FOR_DELIVERY': 'Out for Delivery',
+      'DELIVERED': 'Delivered',
+      'FAILURE': 'Exception',
+      'RETURNED': 'Returned'
+    }[s] || 'Unknown';
+  }
+
+  // Render shipments
+  function renderShipments() {
+    let filtered = transactions;
+
+    // Filter by status
+    if (currentFilter !== 'all') {
+      filtered = filtered.filter(t => normalizeStatus(t.tracking_status) === currentFilter);
+    }
+
+    // Filter by search
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(t => {
+        const tracking = (t.tracking_number || '').toLowerCase();
+        const recipient = (t.address_to?.name || '').toLowerCase();
+        const city = (t.address_to?.city || '').toLowerCase();
+        const state = (t.address_to?.state || '').toLowerCase();
+        return tracking.includes(q) || recipient.includes(q) || city.includes(q) || state.includes(q);
+      });
+    }
+
+    if (filtered.length === 0) {
+      shipmentList.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div>No shipments found</div></div>';
+      return;
+    }
+
+    shipmentList.innerHTML = filtered.map(t => {
+      const addr = t.address_to || {};
+      const date = new Date(t.object_created);
+      const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const carrier = (t.carrier || t.servicelevel?.carrier || 'Unknown').toUpperCase();
+
+      return `
+        <div class="shipment-item" data-id="${t.object_id}">
+          <div class="shipment-row">
+            <div class="shipment-main">
+              <div class="shipment-recipient">${esc(addr.name || 'Unknown')}</div>
+              <div class="shipment-address">${esc(addr.city || '')}${addr.city && addr.state ? ', ' : ''}${esc(addr.state || '')} ${esc(addr.zip || '')}</div>
+            </div>
+            <span class="status-badge ${getStatusClass(t.tracking_status)}">${getStatusLabel(t.tracking_status)}</span>
+          </div>
+          <div class="shipment-meta">
+            ${t.tracking_number ? `<span class="tracking-number" data-tracking="${esc(t.tracking_number)}" title="Click to copy">${esc(t.tracking_number)}</span>` : ''}
+            <span class="shipment-carrier">${esc(carrier)}</span>
+            <span class="shipment-date">${dateStr}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Event listeners
+    shipmentList.querySelectorAll('.shipment-item').forEach(el => {
+      el.addEventListener('click', (e) => {
+        if (e.target.classList.contains('tracking-number')) {
+          const tracking = e.target.dataset.tracking;
+          navigator.clipboard.writeText(tracking);
+          showToast('Tracking number copied!');
+          e.stopPropagation();
+          return;
+        }
+        openDetail(el.dataset.id);
+      });
+    });
+  }
+
+  // Filter handlers
+  $('stats-bar').addEventListener('click', (e) => {
+    const card = e.target.closest('.stat-card');
+    if (!card) return;
+
+    document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    currentFilter = card.dataset.filter;
+    renderShipments();
+  });
+
+  // Search handler
+  searchInput.addEventListener('input', (e) => {
+    searchQuery = e.target.value.trim();
+    renderShipments();
+  });
+
+  // Detail panel
+  async function openDetail(id) {
+    const t = transactions.find(x => x.object_id === id);
+    if (!t) return;
+
+    const addr = t.address_to || {};
+    const from = t.address_from || {};
+    const date = new Date(t.object_created);
+
+    let trackingHtml = '<div class="empty-state" style="padding: 20px;"><div>No tracking updates yet</div></div>';
+
+    // Fetch tracking details if we have a tracking number
+    if (t.tracking_number && t.carrier) {
+      try {
+        const trackRes = await fetch(`https://api.goshippo.com/tracks/${t.carrier}/${t.tracking_number}`, {
+          headers: { 'Authorization': `ShippoToken ${apiToken}` }
+        });
+        if (trackRes.ok) {
+          const trackData = await trackRes.json();
+          if (trackData.tracking_history && trackData.tracking_history.length > 0) {
+            trackingHtml = '<div class="timeline">' + trackData.tracking_history.slice().reverse().map(h => `
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-status">${esc(h.status_details || h.status)}</div>
+                <div class="timeline-location">${esc(h.location?.city || '')}${h.location?.city && h.location?.state ? ', ' : ''}${esc(h.location?.state || '')}</div>
+                <div class="timeline-time">${new Date(h.status_date).toLocaleString()}</div>
+              </div>
+            `).join('') + '</div>';
+          }
+        }
+      } catch (e) {
+        console.error('Track fetch error:', e);
+      }
+    }
+
+    detailContent.innerHTML = `
+      <div class="detail-section">
+        <div class="detail-section-title">Status</div>
+        <div class="detail-card">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span class="status-badge ${getStatusClass(t.tracking_status)}">${getStatusLabel(t.tracking_status)}</span>
+            <span style="font-size: 12px; color: var(--text-muted);">${date.toLocaleDateString()}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-section-title">Tracking</div>
+        <div class="detail-card">
+          <div class="detail-row">
+            <span class="detail-label">Tracking #</span>
+            <span class="detail-value mono link" onclick="copyText('${esc(t.tracking_number || '')}')">${esc(t.tracking_number || 'N/A')}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Carrier</span>
+            <span class="detail-value">${esc((t.carrier || t.servicelevel?.carrier || 'Unknown').toUpperCase())}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Service</span>
+            <span class="detail-value">${esc(t.servicelevel?.name || t.servicelevel?.token || 'Standard')}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-section-title">Recipient</div>
+        <div class="detail-card">
+          <div class="detail-row">
+            <span class="detail-label">Name</span>
+            <span class="detail-value">${esc(addr.name || 'N/A')}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Company</span>
+            <span class="detail-value">${esc(addr.company || '-')}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Address</span>
+            <span class="detail-value">${esc(addr.street1 || '')}${addr.street2 ? '<br>' + esc(addr.street2) : ''}<br>${esc(addr.city || '')}, ${esc(addr.state || '')} ${esc(addr.zip || '')}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-section-title">Tracking History</div>
+        <div class="detail-card">
+          ${trackingHtml}
+        </div>
+      </div>
+
+      <div class="action-btns">
+        ${t.label_url ? `<button class="action-btn primary" onclick="window.open('${esc(t.label_url)}', '_blank')">📄 View Label</button>` : ''}
+        ${t.tracking_url_provider ? `<button class="action-btn" onclick="window.open('${esc(t.tracking_url_provider)}', '_blank')">🔗 Track on Carrier</button>` : ''}
+      </div>
+    `;
+
+    detailOverlay.classList.add('open');
+  }
+
+  $('back-btn').addEventListener('click', () => {
+    detailOverlay.classList.remove('open');
+  });
+
+  // Helpers
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function copyText(text) {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    showToast('Copied to clipboard!');
+  }
+
+  // Start
+  init();
+
+  // Auto-refresh every 5 minutes
+  setInterval(() => {
+    if (apiToken) loadTransactions();
+  }, 5 * 60 * 1000);
+</script>
+
+</body>
+</html>
